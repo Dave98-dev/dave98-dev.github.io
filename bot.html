@@ -1,0 +1,90 @@
+---
+layout: page
+title: Bot
+permalink: /bot/
+---
+
+<script>
+  function jsonEscape(string) {
+    return string.replaceAll(`\\`, `\\\\`).replaceAll(`"`, `\\"`);
+  }
+
+  function parseMessaggi(copione) {
+    const regex = /^(\d\d:\d\d)(\.\d\d\d)?\s(\w+)\s(.*)$/gm;
+
+    const elementi = jsonEscape(copione).replace(
+      regex,
+      '{"timestamp": "$1$2", "username": "$3", "message": "$4"}'
+    );
+    const jsonString =
+      "[" +
+      elementi
+        .split("\r\n")
+        .filter((x) => x != "")
+        .join(",") +
+      "]";
+
+    const obj = JSON.parse(jsonString);
+    return obj;
+  }
+
+  function delay(milliseconds) {
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        resolve();
+      }, milliseconds);
+    });
+  }
+
+  function stringToSeconds(string) {
+    const nums = string.split(":");
+    return Number(nums[0] * 60 + nums[1]);
+  }
+
+  async function startFullChat(messaggi) {
+    const users = new Set(messaggi.map((x) => x.username));
+
+    let promisesUtenti = [];
+
+    for (const user of users) {
+      promisesUtenti.push(ChatUser(user, messaggi));
+    }
+    await Promise.all(promisesUtenti);
+  }
+
+  async function ChatUser(username, messaggi) {
+    const messaggiFiltrati = messaggi.filter((x) => x.username == username);
+    for (const messaggio of messaggiFiltrati) {
+      const timestamp = stringToSeconds(messaggio.timestamp);
+      await delay((timestamp - lastTimeStamp) * 1000);
+      lastTimeStamp = timestamp;
+      console.log(`${messaggio.username}: ${messaggio.message}\n`);
+    }
+  }
+</script>
+
+<label for="copione">
+  copione:
+  <input type="file" name="copione" id="copione" />
+</label>
+
+<button>analisi copione</button>
+
+<table>
+  <thead>
+    <tr>
+      <th>username</th>
+      <th>Oauth token</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>david</td>
+      <td><input type="text" id="oauth-david" /></td>
+    </tr>
+  </tbody>
+</table>
+
+<button onclick="iniziachat()">inizia chat</button>
+
+<script></script>
