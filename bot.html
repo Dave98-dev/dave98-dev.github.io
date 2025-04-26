@@ -1,8 +1,12 @@
 ---
-layout: page
+layout: default
 title: Bot
 permalink: /bot/
 ---
+
+<a href="/">Home</a>
+
+<h1>Bot</h1>
 
 <script>
   function jsonEscape(string) {
@@ -68,23 +72,31 @@ permalink: /bot/
   <input type="file" name="copione" id="copione" />
 </label>
 
-<button>analisi copione</button>
+<button onclick="showAnalisi()">analisi copione</button>
 
-<table>
-  <thead>
-    <tr>
-      <th>username</th>
-      <th>Oauth token</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td>david</td>
-      <td><input type="text" id="oauth-david" /></td>
-    </tr>
-  </tbody>
-</table>
+<div id="dopoanalisi" style="display: none">
+  <table>
+    <thead>
+      <tr>
+        <th>username</th>
+        <th>Oauth token</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>david</td>
+        <td><input type="text" id="oauth-david" /></td>
+      </tr>
+    </tbody>
+  </table>
 
-<button onclick="iniziachat()">inizia chat</button>
-
-<script></script>
+  <button onclick="iniziachat()">inizia chat</button>
+</div>
+<script>
+  function showAnalisi() {
+    document.getElementById("dopoanalisi").style = "display:block";
+  }
+  function iniziachat() {
+    alert("not implemented yet");
+  }
+</script>
