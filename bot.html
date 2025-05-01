@@ -23,7 +23,7 @@ permalink: /bot/
     const jsonString =
       "[" +
       elementi
-        .split("\r\n")
+        .split("\n")
         .filter((x) => x != "")
         .join(",") +
       "]";
@@ -45,24 +45,25 @@ permalink: /bot/
     return Number(nums[0] * 60 + nums[1]);
   }
 
-  async function startFullChat(messaggi) {
+  async function startFullChat(messaggi, sendMsg) {
     const users = new Set(messaggi.map((x) => x.username));
 
     let promisesUtenti = [];
 
     for (const user of users) {
-      promisesUtenti.push(ChatUser(user, messaggi));
+      promisesUtenti.push(ChatUser(user, messaggi, sendMsg));
     }
     await Promise.all(promisesUtenti);
   }
 
-  async function ChatUser(username, messaggi) {
+  async function ChatUser(username, messaggi, sendMsg) {
     const messaggiFiltrati = messaggi.filter((x) => x.username == username);
+    let lastTimeStamp = 0;
     for (const messaggio of messaggiFiltrati) {
       const timestamp = stringToSeconds(messaggio.timestamp);
       await delay((timestamp - lastTimeStamp) * 1000);
       lastTimeStamp = timestamp;
-      console.log(`${messaggio.username}: ${messaggio.message}\n`);
+      sendMsg(`${messaggio.username}: ${messaggio.message}\n`);
     }
   }
 </script>
@@ -89,14 +90,66 @@ permalink: /bot/
       </tr>
     </tbody>
   </table>
-
-  <button onclick="iniziachat()">inizia chat</button>
+  <button onclick="iniziaChat()">inizia chat</button>
 </div>
 <script>
-  function showAnalisi() {
+  let messaggi = [];
+  async function showAnalisi() {
     document.getElementById("dopoanalisi").style = "display:block";
+    const fileInput = document.getElementById("copione");
+    const file = fileInput.files[0];
+
+    if (!file) {
+      alert("non trovo il file del copione");
+      return;
+    }
+
+    const text = await file.text();
+    messaggi = parseMessaggi(text);
+    console.log(messaggi);
   }
-  function iniziachat() {
-    alert("not implemented yet");
+  function getChatter() {
+    const oauthToken = document.getElementById("oauth-david").value;
+
+    if (!oauthToken) {
+      alert("non trovo l'access token");
+      return;
+    }
+
+    return new Promise((resolve) => {
+      const oauth = "oauth:" + oauthToken;
+      const nick = "davibukk";
+      const channel = "#davibukk";
+
+      const socket = new WebSocket("wss://irc-ws.chat.twitch.tv:443");
+
+      socket.onopen = () => {
+        console.log("Connected to Twitch IRC");
+
+        socket.send(`PASS ${oauth}`);
+        socket.send(`NICK ${nick}`);
+        socket.send(`JOIN ${channel}`);
+
+        resolve((message) => socket.send(`PRIVMSG ${channel} :${message}`));
+      };
+
+      socket.onmessage = (event) => {
+        const message = event.data;
+        console.log("IRC Message:", message);
+
+        // Respond to PING to stay connected
+        if (message.startsWith("PING")) {
+          socket.send("PONG :tmi.twitch.tv");
+        }
+      };
+
+      socket.onerror = (error) => {
+        console.error("WebSocket Error:", error);
+      };
+    });
+  }
+  async function iniziaChat() {
+    const sendMsg = await getChatter();
+    if (sendMsg) await startFullChat(messaggi, sendMsg);
   }
 </script>

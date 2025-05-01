@@ -50,7 +50,7 @@ le righe hanno queste informazioni
 
    sarà presente un **dizionario** che si userà per collegare un username con un **Token di autenticazione**
 
-   per sapere come creare questo token seguire [questa guida](https://dev.twitch.tv/docs/authentication/getting-tokens-oauth/){:target="\_blank"}
+   per sapere come creare questo token visitare [questa pagina](bot_token)
 
 3. ### messaggio
 

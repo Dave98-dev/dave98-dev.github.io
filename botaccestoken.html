@@ -1,0 +1,54 @@
+---
+layout: default
+title: Access Token
+permalink: /bot_token/
+---
+
+<a href="/">Home</a>
+|
+<a href="/bot">Bot</a>
+
+<div id="genera" style="display: none">
+  <h1>generare il Client id</h1>
+
+  <form action="#" onsubmit="handlesubmit(event)">
+    <input type="text" name="client_id" id="client_id" />
+    <button type="submit">Connect with twitch</button>
+  </form>
+</div>
+
+<a
+  href="https://id.twitch.tv/oauth2/authorize?response_type=token&client_id=q06e3e3nb11m9w7e0r6cl6maub9ckd&redirect_uri=http%3A%2F%2Flocalhost%3A4000%2Fbot_token%2F&scope=chat%3Aread+chat%3Aedit"
+  >Connect with Twitch</a
+>
+<div id="generato" style="display: none">
+  <h1>Token Generato</h1>
+  <p id="output"></p>
+</div>
+
+<script>
+  const currentUrl = window.location.toString();
+  if (currentUrl.includes("access_token")) {
+    document.getElementById("generato").style = "display: block";
+    const eqIdx = currentUrl.indexOf("=");
+    const andIdx = currentUrl.indexOf("&");
+    document.getElementById("output").innerText = currentUrl.slice(
+      eqIdx + 1,
+      andIdx
+    );
+  } else {
+    document.getElementById("genera").style = "display: block";
+  }
+
+  function handlesubmit(event) {
+    event.preventDefault();
+
+    const twitchUrl = new URL("https://id.twitch.tv/oauth2/authorize");
+    twitchUrl.searchParams.append("response_type", "token");
+    twitchUrl.searchParams.append("client_id", event.target.client_id.value);
+    twitchUrl.searchParams.append("redirect_uri", window.location);
+    twitchUrl.searchParams.append("scope", "chat:read chat:edit");
+
+    window.location = twitchUrl.toString();
+  }
+</script>
